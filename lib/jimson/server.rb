@@ -109,7 +109,7 @@ module Jimson
 
       return nil if response.nil? || (response.respond_to?(:empty?) && response.empty?)
 
-      MultiJson.encode(response)
+      MultiJson.dump(response)
     end
 
     def handle_request(request)
@@ -216,7 +216,7 @@ module Jimson
     end
 
     def parse_request(post)
-      data = MultiJson.decode(post)
+      data = MultiJson.load(post)
       rescue 
         raise Server::Error::ParseError.new 
     end

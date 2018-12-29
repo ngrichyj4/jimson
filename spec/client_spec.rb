@@ -29,13 +29,13 @@ module Jimson
 
       context "when using a symbol to specify a namespace" do
         it "sends the method prefixed with the namespace in the request" do
-          expected = MultiJson.encode({
+          expected = MultiJson.dump({
            'jsonrpc' => '2.0',
            'method'  => 'foo.sum',
            'params'  => [1,2,3],
            'id'      => 1
           })
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = MultiJson.dump(BOILERPLATE.merge({'result' => 42}))
           RestClient.should_receive(:post).with(SPEC_URL, expected, {:content_type => 'application/json'}).and_return(@resp_mock)
           @resp_mock.should_receive(:body).at_least(:once).and_return(response)
           @client[:foo].sum(1, 2, 3).should == 42
@@ -43,13 +43,13 @@ module Jimson
 
         context "when the namespace is nested" do
           it "sends the method prefixed with the full namespace in the request" do
-            expected = MultiJson.encode({
+            expected = MultiJson.dump({
              'jsonrpc' => '2.0',
              'method'  => 'foo.bar.sum',
              'params'  => [1,2,3],
              'id'      => 1
             })
-            response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+            response = MultiJson.dump(BOILERPLATE.merge({'result' => 42}))
             RestClient.should_receive(:post).with(SPEC_URL, expected, {:content_type => 'application/json'}).and_return(@resp_mock)
             @resp_mock.should_receive(:body).at_least(:once).and_return(response)
             @client[:foo][:bar].sum(1, 2, 3).should == 42
@@ -59,13 +59,13 @@ module Jimson
 
       context "when sending positional arguments" do
         it "sends a request with the correct method and args" do
-          expected = MultiJson.encode({
+          expected = MultiJson.dump({
            'jsonrpc' => '2.0',
            'method'  => 'foo',
            'params'  => [1,2,3],
            'id'      => 1
           })
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = MultiJson.dump(BOILERPLATE.merge({'result' => 42}))
           RestClient.should_receive(:post).with(SPEC_URL, expected, {:content_type => 'application/json'}).and_return(@resp_mock)
           @resp_mock.should_receive(:body).at_least(:once).and_return(response)
           @client['foo', 1, 2, 3].should == 42
@@ -73,13 +73,13 @@ module Jimson
 
         context "when one of the args is an array" do
           it "sends a request with the correct method and args" do
-            expected = MultiJson.encode({
+            expected = MultiJson.dump({
              'jsonrpc' => '2.0',
              'method'  => 'foo',
              'params'  => [[1,2],3],
              'id'      => 1
             })
-            response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+            response = MultiJson.dump(BOILERPLATE.merge({'result' => 42}))
             RestClient.should_receive(:post).with(SPEC_URL, expected, {:content_type => 'application/json'}).and_return(@resp_mock)
             @resp_mock.should_receive(:body).at_least(:once).and_return(response)
             @client['foo', [1, 2], 3].should == 42
@@ -91,7 +91,7 @@ module Jimson
     describe "sending a single request" do
       context "when using positional parameters" do
         before(:each) do
-          @expected = MultiJson.encode({
+          @expected = MultiJson.dump({
                        'jsonrpc' => '2.0',
                        'method'  => 'foo',
                        'params'  => [1,2,3],
@@ -99,7 +99,7 @@ module Jimson
           })
         end
         it "sends a valid JSON-RPC request and returns the result" do
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = MultiJson.dump(BOILERPLATE.merge({'result' => 42}))
           RestClient.should_receive(:post).with(SPEC_URL, @expected, {:content_type => 'application/json'}).and_return(@resp_mock)
           @resp_mock.should_receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL)
@@ -107,7 +107,7 @@ module Jimson
         end
 
         it "sends a valid JSON-RPC request with custom options" do
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = MultiJson.dump(BOILERPLATE.merge({'result' => 42}))
           RestClient.should_receive(:post).with(SPEC_URL, @expected, {:content_type => 'application/json', :timeout => 10000}).and_return(@resp_mock)
           @resp_mock.should_receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL, :timeout => 10000)
@@ -117,13 +117,13 @@ module Jimson
 
       context "when one of the parameters is an array" do
         it "sends a correct JSON-RPC request (array is preserved) and returns the result" do
-          expected = MultiJson.encode({
+          expected = MultiJson.dump({
             'jsonrpc' => '2.0',
             'method'  => 'foo',
             'params'  => [[1,2],3],
             'id'      => 1
           })
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = MultiJson.dump(BOILERPLATE.merge({'result' => 42}))
           RestClient.should_receive(:post).with(SPEC_URL, expected, {:content_type => 'application/json'}).and_return(@resp_mock)
           @resp_mock.should_receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL)
@@ -134,14 +134,14 @@ module Jimson
 
     describe "sending a batch request" do
       it "sends a valid JSON-RPC batch request and puts the results in the response objects" do
-        batch = MultiJson.encode([
+        batch = MultiJson.dump([
           {"jsonrpc" => "2.0", "method" => "sum", "params" => [1,2,4], "id" => "1"},
           {"jsonrpc" => "2.0", "method" => "subtract", "params" => [42,23], "id" => "2"},
           {"jsonrpc" => "2.0", "method" => "foo_get", "params" => [{"name" => "myself"}], "id" => "5"},
           {"jsonrpc" => "2.0", "method" => "get_data", "id" => "9"} 
         ])
 
-        response = MultiJson.encode([
+        response = MultiJson.dump([
           {"jsonrpc" => "2.0", "result" => 7, "id" => "1"},
           {"jsonrpc" => "2.0", "result" => 19, "id" => "2"},
           {"jsonrpc" => "2.0", "error" => {"code" => -32601, "message" => "Method not found."}, "id" => "5"},

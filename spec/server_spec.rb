@@ -69,7 +69,7 @@ module Jimson
       end
 
       def post_json(hash)
-        post '/', MultiJson.encode(hash), {'Content-Type' => 'application/json'}
+        post '/', MultiJson.dump(hash), {'Content-Type' => 'application/json'}
       end
       
       before(:each) do
@@ -92,7 +92,7 @@ module Jimson
             post_json(req)
 
             last_response.should be_ok
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == {
                              'jsonrpc' => '2.0',
                              'result'  => 4,
@@ -110,7 +110,7 @@ module Jimson
             post_json(req)
 
             last_response.should be_ok
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == {
                              'jsonrpc' => '2.0',
                              'result'  => 'a',
@@ -128,7 +128,7 @@ module Jimson
             post_json(req)
 
             last_response.should be_ok
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == {
                              'jsonrpc' => '2.0',
                              'result'  => 4,
@@ -150,7 +150,7 @@ module Jimson
             post_json(req)
             
             last_response.should be_ok
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == {
                              'jsonrpc' => '2.0',
                              'result'  => 4,
@@ -183,7 +183,7 @@ module Jimson
                 }
           post_json(req)
 
-          resp = MultiJson.decode(last_response.body)
+          resp = MultiJson.load(last_response.body)
           resp.should == {
                             'jsonrpc' => '2.0',
                             'error'   => {
@@ -204,7 +204,7 @@ module Jimson
                 }
           post_json(req)
 
-          resp = MultiJson.decode(last_response.body)
+          resp = MultiJson.load(last_response.body)
           resp.should == {
                             'jsonrpc' => '2.0',
                             'error'   => {
@@ -226,7 +226,7 @@ module Jimson
                 }
           post_json(req)
 
-          resp = MultiJson.decode(last_response.body)
+          resp = MultiJson.load(last_response.body)
           resp.should == {
                             'jsonrpc' => '2.0',
                             'error'   => {
@@ -248,7 +248,7 @@ module Jimson
                   }
             post_json(req)
 
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == {
                               'jsonrpc' => '2.0',
                               'error'   => {
@@ -272,9 +272,9 @@ module Jimson
 
             # have to make a new Rack::Test browser since this server is different than the normal one
             browser = Rack::Test::Session.new(Rack::MockSession.new(app))
-            browser.post '/', MultiJson.encode(req), {'Content-Type' => 'application/json'}
+            browser.post '/', MultiJson.dump(req), {'Content-Type' => 'application/json'}
 
-            resp = MultiJson.decode(browser.last_response.body)
+            resp = MultiJson.load(browser.last_response.body)
             resp.should == {
                               'jsonrpc' => '2.0',
                               'error'   => {
@@ -289,7 +289,7 @@ module Jimson
 
       describe "receiving invalid JSON" do
         it "returns an error response" do
-          req = MultiJson.encode({
+          req = MultiJson.dump({
             'jsonrpc' => '2.0',
             'method'  => 'foobar',
             'id'      => 1
@@ -297,7 +297,7 @@ module Jimson
           req += '}' # make the json invalid
           post '/', req, {'Content-type' => 'application/json'}
 
-          resp = MultiJson.decode(last_response.body)
+          resp = MultiJson.load(last_response.body)
           resp.should == {
                             'jsonrpc' => '2.0',
                             'error'   => {
@@ -317,7 +317,7 @@ module Jimson
                     'method'  => 1 # method as int is invalid
                   }
             post_json(req)
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == INVALID_RESPONSE_EXPECTATION 
           end
         end
@@ -326,7 +326,7 @@ module Jimson
           it "returns an error response" do
             req = []
             post_json(req)
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == INVALID_RESPONSE_EXPECTATION
           end
         end
@@ -335,7 +335,7 @@ module Jimson
           it "returns an error response" do
             req = [1,2]
             post_json(req)
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == [INVALID_RESPONSE_EXPECTATION, INVALID_RESPONSE_EXPECTATION] 
           end
         end
@@ -353,7 +353,7 @@ module Jimson
                       {'jsonrpc' => '2.0', 'method' => 'get_data', 'id' => '9'} 
                    ]
             post_json(reqs)
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == [
                     {'jsonrpc' => '2.0', 'result' => 7, 'id' => '1'},
                     {'jsonrpc' => '2.0', 'result' => 19, 'id' => '2'},
@@ -396,7 +396,7 @@ module Jimson
             post_json(req)
 
             last_response.should be_ok
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp.should == {
                              'jsonrpc' => '2.0',
                              'result'  => true,
@@ -415,7 +415,7 @@ module Jimson
             post_json(req)
 
             last_response.should be_ok
-            resp = MultiJson.decode(last_response.body)
+            resp = MultiJson.load(last_response.body)
             resp['jsonrpc'].should == '2.0'
             resp['id'].should == 1
             expected = ['get_data', 'notify_hello', 'subtract', 'sum', 'car', 'ugly_method', 'update', 'system.isAlive', 'system.listMethods', 'other.multiply']
@@ -440,10 +440,10 @@ module Jimson
                   'params'  => [2, 3],
                   'id'      => 1
                 }
-          browser.post '/', MultiJson.encode(req), {'Content-Type' => 'application/json'}
+          browser.post '/', MultiJson.dump(req), {'Content-Type' => 'application/json'}
 
           browser.last_response.should be_ok
-          resp = MultiJson.decode(browser.last_response.body)
+          resp = MultiJson.load(browser.last_response.body)
           resp.should == {
                            'jsonrpc' => '2.0',
                            'result'  => 6,

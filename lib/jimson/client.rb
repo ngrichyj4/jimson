@@ -25,7 +25,7 @@ module Jimson
       resp = send_single_request(sym.to_s, args)
 
       begin
-        data = MultiJson.decode(resp)
+        data = MultiJson.load(resp)
       rescue
         raise Client::Error::InvalidJSON.new(resp)
       end
@@ -39,7 +39,7 @@ module Jimson
 
     def send_single_request(method, args)
       namespaced_method = @namespace.nil? ? method : "#@namespace#{method}"
-      post_data = MultiJson.encode({
+      post_data = MultiJson.dump({
         'jsonrpc' => JSON_RPC_VERSION,
         'method'  => namespaced_method,
         'params'  => args,
@@ -54,7 +54,7 @@ module Jimson
     end
 
     def send_batch_request(batch)
-      post_data = MultiJson.encode(batch)
+      post_data = MultiJson.dump(batch)
       resp = RestClient.post(@url, post_data, @opts)
       if resp.nil? || resp.body.nil? || resp.body.empty?
         raise Client::Error::InvalidResponse.new
@@ -120,7 +120,7 @@ module Jimson
       response = send_batch_request(batch)
 
       begin
-        responses = MultiJson.decode(response)
+        responses = MultiJson.load(response)
       rescue
         raise Client::Error::InvalidJSON.new(json)
       end
